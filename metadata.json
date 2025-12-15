@@ -1,0 +1,7 @@
+{
+  "name": "Copy of RODDAR",
+  "description": "Plataforma de gestão inteligente de pneus para caminhoneiros. Controle visual, IA para análise de desgaste e previsão financeira.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
