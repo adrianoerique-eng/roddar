@@ -45,7 +45,7 @@ const DigitalGarage: React.FC<DigitalGarageProps> = ({ truck, onUpdateTruck }) =
   const svgHeight = chassisEndY + sparesHeight + 20; // Extra padding at bottom
 
   // Check if rotation was recently applied (today) on traction axle
-  const tractionAxle = truck.axles.find(a => a.type === 'TRACAO') || truck.axles[1];
+  const tractionAxle = truck.axles.find(a => a.type === 'TRAÇÃO') || truck.axles[1];
   const hasRecentRotation = tractionAxle?.tires.some(t => 
     t?.history.some(h => 
       h.type === 'RODIZIO' && 
@@ -56,7 +56,7 @@ const DigitalGarage: React.FC<DigitalGarageProps> = ({ truck, onUpdateTruck }) =
   const handleApplyAutoRotation = () => {
       // Logic to perform the "X" rotation on the Traction Axle
       // 1. Find Traction Axle (or second axle as fallback)
-      const axleIndex = truck.axles.findIndex(a => a.type === 'TRACAO');
+      const axleIndex = truck.axles.findIndex(a => a.type === 'TRAÇÃO');
       const targetAxleIndex = axleIndex !== -1 ? axleIndex : 1; // Default to index 1 if not found
       
       if (targetAxleIndex >= truck.axles.length) return; // Safety check

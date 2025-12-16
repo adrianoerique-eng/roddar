@@ -34,7 +34,7 @@ export interface Tire {
 
 export interface Axle {
   id: string;
-  type: 'DIANTEIRO' | 'TRACAO' | 'TRUCK' | 'CARRETA';
+  type: 'DIANTEIRO' | 'TRAÇÃO' | 'TRUCK' | 'CARRETA';
   tires: (Tire | null)[]; // null represents empty slot
 }
 

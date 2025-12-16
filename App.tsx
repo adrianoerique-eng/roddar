@@ -70,7 +70,7 @@ const App: React.FC = () => {
     <div className="flex flex-col leading-none">
         <span>{text}</span>
         <span className="text-[10px] text-slate-500 font-sans font-normal normal-case mt-0.5">
-            (em <span className="text-red-500 font-bold">desenvolvimento</span>)
+            (<span className="text-red-500 font-bold">em desenvolvimento</span>)
         </span>
     </div>
   );

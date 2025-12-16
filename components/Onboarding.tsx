@@ -40,7 +40,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   // Step 3: Axles
   const [axles, setAxles] = useState<Axle[]>([
     { id: 'axle-1', type: 'DIANTEIRO', tires: [null, null] },
-    { id: 'axle-2', type: 'TRACAO', tires: [null, null, null, null] }
+    { id: 'axle-2', type: 'TRAÇÃO', tires: [null, null, null, null] }
   ]);
   
   // Step 4: Spares (Individual Configuration)
@@ -136,6 +136,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
 
   // Validation helpers
   const isOwnerDataValid = ownerData.driverName && ownerData.city && ownerData.phone;
+  // Step 2 Validation: Model, Plate AND Total KM are now required.
+  const isVehicleDataValid = formData.model && formData.plate && formData.totalKm !== '';
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-[#0B0F19] to-[#0B0F19]">
@@ -341,7 +343,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Km Atual</label>
+                                <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Km Atual (Obrigatório)</label>
                                 <input 
                                     type="number" 
                                     placeholder="0"
@@ -356,11 +358,12 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
                     <div className="mt-10 flex justify-between">
                         <button onClick={() => setStep(1)} className="text-slate-400 hover:text-white">Voltar</button>
                         <button 
-                            onClick={() => formData.model && formData.plate ? setStep(3) : null}
+                            onClick={() => isVehicleDataValid ? setStep(3) : null}
+                            disabled={!isVehicleDataValid}
                             className={`flex items-center gap-2 px-8 py-4 rounded-xl font-bold transition-all ${
-                                formData.model && formData.plate 
+                                isVehicleDataValid 
                                 ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-900/40' 
-                                : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                                : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
                             }`}
                         >
                             Próximo <ArrowRight size={20} />

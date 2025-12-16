@@ -12,7 +12,7 @@ interface RotationSuggestionModalProps {
 const RotationSuggestionModal: React.FC<RotationSuggestionModalProps> = ({ truck, isApplied = false, onClose, onConfirm }) => {
   
   // Logic to find the Traction axle
-  const tractionAxle = truck.axles.find(a => a.type === 'TRACAO') || truck.axles[1];
+  const tractionAxle = truck.axles.find(a => a.type === 'TRAÇÃO') || truck.axles[1];
   const hasDualTires = tractionAxle && tractionAxle.tires.length === 4;
 
   // Get specific tires if available (Assuming standard 4-tire layout: OL, IL, IR, OR)

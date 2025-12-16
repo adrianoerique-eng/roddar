@@ -45,7 +45,7 @@ export const MOCK_TRUCK: Truck = {
     },
     {
       id: 'axle-2',
-      type: 'TRACAO',
+      type: 'TRAÇÃO',
       tires: [
         createTire('FIRE-003', 'Bridgestone', TireStatus.NEW, 2400, 5000),
         createTire('FIRE-004', 'Bridgestone', TireStatus.NEW, 2400, 5000),
