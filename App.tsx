@@ -95,7 +95,7 @@ const App: React.FC = () => {
             </div>
             <div>
                 <h1 className="text-2xl font-bold text-white tracking-tight font-tech">RODDAR</h1>
-                <p className="text-[10px] text-blue-400 font-medium leading-tight mt-0.5">O pneu certo, no lugar certo, na hora certa.</p>
+                <p className="text-[10px] text-blue-400 font-medium leading-tight mt-0.5">Gestão inteligente de pneus do caminhão</p>
             </div>
         </div>
 
