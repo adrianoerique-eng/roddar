@@ -6,10 +6,12 @@ export enum TireStatus {
   CRITICAL = 'CRITICO'
 }
 
+export type PaymentMethod = 'VISTA' | 'CHEQUE' | 'PROMISSORIA' | 'PARCELADO' | 'CARTAO';
+
 export interface MaintenanceRecord {
   id: string;
   date: string;
-  type: 'FURO' | 'BOLHA' | 'DESGASTE_IRREGULAR' | 'RECAPAGEM' | 'RODIZIO' | 'PRESSAO' | 'OUTRO' | 'CORTE' | 'ESTOURO';
+  type: 'FURO' | 'BOLHA' | 'DESGASTE_IRREGULAR' | 'RECAPAGEM' | 'RODIZIO' | 'OUTRO' | 'CORTE' | 'ESTOURO';
   description: string;
   cost: number;
 }
@@ -23,10 +25,11 @@ export interface Tire {
   size: string;
   purchaseDate: string;
   purchasePrice: number;
+  paymentMethod: PaymentMethod;
+  storeName: string;
   initialKm: number;
   currentKm: number;
   status: TireStatus;
-  pressure: number; // PSI
   treadDepth: number; // mm
   history: MaintenanceRecord[];
   cpk: number; // Custo por Km calculado
@@ -39,9 +42,9 @@ export interface Axle {
 }
 
 export interface Owner {
-  name: string; // Nome da Empresa ou Proprietário
-  driverName: string; // Nome do Condutor
-  photo?: string; // Foto de perfil em Base64
+  name: string;
+  driverName: string;
+  photo?: string;
   city: string;
   street: string;
   number: string;
@@ -55,8 +58,8 @@ export interface Trip {
   destination: string;
   distanceKm: number;
   startDate: string;
-  plannedArrivalDate: string; // Nova data de previsão de chegada
-  completedDate?: string; // Data real de conclusão
+  plannedArrivalDate: string;
+  completedDate?: string;
   status: 'ACTIVE' | 'COMPLETED';
 }
 
@@ -65,25 +68,17 @@ export interface Truck {
   plate: string;
   model: string;
   axles: Axle[];
-  spares: Tire[]; // Pneus de estepe
+  spares: Tire[];
   totalKm: number;
   owner: Owner;
   activeTrip?: Trip | null;
-  tripHistory: Trip[]; // Histórico de viagens
+  tripHistory: Trip[];
 }
 
 export type ViewState = 'GARAGE' | 'FINANCIAL' | 'AI_ADVISOR' | 'TRIP';
 
-/**
- * Calculates the status of a tire based on specific business rules:
- * - Critical: Structural damage, > 120k km, > 2 retreads, or < 3mm tread.
- * - Good (Meia Vida): > 40k km, 1-2 retreads, or < 8mm tread.
- * - New: Otherwise.
- */
 export const calculateTireStatus = (tire: Tire): TireStatus => {
   const kmRun = tire.currentKm - tire.initialKm;
-  
-  // 1. Critical Checks (Priority)
   const hasStructuralDamage = tire.history.some(h => ['BOLHA', 'ESTOURO', 'CORTE'].includes(h.type));
   const retreadCount = tire.history.filter(h => h.type === 'RECAPAGEM').length;
   
@@ -91,12 +86,8 @@ export const calculateTireStatus = (tire: Tire): TireStatus => {
   if (kmRun > 120000) return TireStatus.CRITICAL;
   if (retreadCount > 2) return TireStatus.CRITICAL;
   if (tire.treadDepth < 3) return TireStatus.CRITICAL;
-
-  // 2. Warning/Good Checks
   if (kmRun > 40000) return TireStatus.GOOD;
   if (retreadCount > 0) return TireStatus.GOOD;
   if (tire.treadDepth < 8) return TireStatus.GOOD;
-
-  // 3. Default New
   return TireStatus.NEW;
 };

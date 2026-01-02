@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Truck, ArrowRight, Plus, Minus, Check, Disc, User, MapPin, Phone, Briefcase, Camera } from 'lucide-react';
+import { Truck, ArrowRight, Plus, Minus, Check, Disc, User, MapPin, Phone, Briefcase, Camera, Sparkles } from 'lucide-react';
 import { Truck as TruckType, Axle, TireStatus, Tire } from '../types';
 import { createTire } from '../constants';
 
@@ -18,8 +18,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   
   // Step 1: Owner Data
   const [ownerData, setOwnerData] = useState({
-    name: '', // Now Optional (Company/Owner)
-    driverName: '', // Now Required (Main Driver)
+    name: '', // Optional (Company/Owner)
+    driverName: '', // Required (Main Driver)
     photo: '',
     city: '',
     street: '',
@@ -46,11 +46,48 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   // Step 4: Spares (Individual Configuration)
   const [sparesList, setSparesList] = useState<SpareConfig[]>([]);
 
+  // --- AUTOFILL LOGIC ---
+  const autoFillOwner = () => {
+    setOwnerData({
+      name: 'Transportes Rápido Brasil',
+      driverName: 'Ricardo Oliveira',
+      photo: '',
+      city: 'Curitiba-PR',
+      street: 'Av. das Indústrias',
+      number: '4500',
+      phone: '(41) 98888-7777',
+      email: 'contato@rapidobrasil.com.br'
+    });
+  };
+
+  const autoFillVehicle = () => {
+    setFormData({
+      plate: 'ROD-2A25',
+      model: 'Scania R450 6x2',
+      totalKm: '125000'
+    });
+  };
+
+  const autoFillAxles = () => {
+    setAxles([
+      { id: 'axle-1', type: 'DIANTEIRO', tires: [null, null] },
+      { id: 'axle-2', type: 'TRAÇÃO', tires: [null, null, null, null] },
+      { id: 'axle-3', type: 'TRUCK', tires: [null, null, null, null] }
+    ]);
+  };
+
+  const autoFillSpares = () => {
+    setSparesList([
+      { id: 'sp-1', brand: 'Michelin', status: TireStatus.NEW },
+      { id: 'sp-2', brand: 'Bridgestone', status: TireStatus.GOOD }
+    ]);
+  };
+
   const handleAddAxle = () => {
     const newAxle: Axle = {
       id: `axle-${axles.length + 1}`,
       type: 'TRUCK',
-      tires: [null, null, null, null] // Default to dual tires for rear axles
+      tires: [null, null, null, null] 
     };
     setAxles([...axles, newAxle]);
   };
@@ -62,7 +99,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   };
 
   const toggleAxleType = (index: number) => {
-    // Toggle between Single (2 tires) and Dual (4 tires)
     const newAxles = [...axles];
     const currentTires = newAxles[index].tires;
     
@@ -74,7 +110,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     setAxles(newAxles);
   };
 
-  // Spare Handlers
   const addSpare = () => {
       setSparesList([...sparesList, { 
           id: Math.random().toString(36).substr(2, 9), 
@@ -107,17 +142,15 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
   };
 
   const handleSubmit = () => {
-    // Generate axle tires
     const finalAxles = axles.map((axle, idx) => ({
         ...axle,
         tires: axle.tires.map((_, tIdx) => 
-             createTire(`PNEU-${idx}-${tIdx}`, 'Genérico', TireStatus.NEW, 0, 0)
+             createTire(`PNEU-${idx}-${tIdx}`, 'Michelin', TireStatus.NEW, 2800, 0)
         )
     }));
 
-    // Generate spare tires from specific config
     const spares: Tire[] = sparesList.map((config, i) => 
-        createTire(`STP-${i}`, config.brand, config.status, 0, 0)
+        createTire(`STP-${i}`, config.brand, config.status, 2400, 0)
     );
 
     const newTruck: TruckType = {
@@ -134,10 +167,19 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     onComplete(newTruck);
   };
 
-  // Validation helpers
   const isOwnerDataValid = ownerData.driverName && ownerData.city && ownerData.phone;
-  // Step 2 Validation: Model, Plate AND Total KM are now required.
   const isVehicleDataValid = formData.model && formData.plate && formData.totalKm !== '';
+
+  const AutoFillButton = ({ onClick }: { onClick: () => void }) => (
+    <button 
+        onClick={onClick}
+        className="absolute top-8 right-8 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 border border-blue-500/30 transition-all group"
+        title="Preencher com dados de exemplo"
+    >
+        <Sparkles size={14} className="group-hover:rotate-12 transition-transform" />
+        <span className="text-[10px] font-bold uppercase tracking-widest">Auto-preencher</span>
+    </button>
+  );
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 via-[#0B0F19] to-[#0B0F19]">
@@ -188,6 +230,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {/* STEP 1: PROPRIETÁRIO */}
             {step === 1 && (
                 <div className="animate-in fade-in slide-in-from-right duration-500">
+                    <AutoFillButton onClick={autoFillOwner} />
                     <h2 className="text-3xl font-bold text-white mb-2 font-tech">Cadastro do Proprietário</h2>
                     <p className="text-slate-400 mb-6">Vamos começar cadastrando o responsável pela frota.</p>
                     
@@ -317,6 +360,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {/* STEP 2: VEICULO */}
             {step === 2 && (
                 <div className="animate-in fade-in slide-in-from-right duration-500">
+                    <AutoFillButton onClick={autoFillVehicle} />
                     <h2 className="text-3xl font-bold text-white mb-2 font-tech">Cadastro do Veículo</h2>
                     <p className="text-slate-400 mb-8">Agora os dados do caminhão.</p>
                     
@@ -375,6 +419,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {/* STEP 3: EIXOS */}
             {step === 3 && (
                 <div className="animate-in fade-in slide-in-from-right duration-500">
+                    <AutoFillButton onClick={autoFillAxles} />
                     <h2 className="text-3xl font-bold text-white mb-2 font-tech">Configuração de Eixos</h2>
                     <p className="text-slate-400 mb-8">Quantos eixos e pneus seu caminhão possui?</p>
 
@@ -442,6 +487,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
             {/* STEP 4: ESTEPE */}
             {step === 4 && (
                 <div className="animate-in fade-in slide-in-from-right duration-500 flex flex-col h-full max-h-[600px]">
+                    <AutoFillButton onClick={autoFillSpares} />
                     <div>
                         <h2 className="text-3xl font-bold text-white mb-2 font-tech">Estepes (Sobressalentes)</h2>
                         <p className="text-slate-400 mb-6">Configure cada pneu de estepe individualmente.</p>

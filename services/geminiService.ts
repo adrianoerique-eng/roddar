@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-const apiKey = process.env.API_KEY || '';
-const ai = new GoogleGenAI({ apiKey });
+// Fix: obtain apiKey exclusively from process.env.API_KEY and use direct initialization with named parameter.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 // Interface for the AI Tread Analysis Response
 export interface TreadAnalysisResult {
@@ -11,21 +11,14 @@ export interface TreadAnalysisResult {
   recommendation: string;
 }
 
+/**
+ * Analyzes tire image using Gemini.
+ * Fix: Use 'gemini-3-flash-preview' for vision-based text analysis.
+ */
 export const analyzeTireImage = async (base64Image: string): Promise<TreadAnalysisResult> => {
-  if (!apiKey) {
-    // Fallback mock if no key is present for demo purposes
-    console.warn("No API Key found. Returning mock analysis.");
-    return new Promise(resolve => setTimeout(() => resolve({
-      estimatedDepthMm: 4.5,
-      wearPercentage: 75,
-      condition: "Desgaste Acentuado",
-      recommendation: "Planejar recapagem ou troca nos próximos 2.000km."
-    }), 2000));
-  }
-
   try {
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
+      model: 'gemini-3-flash-preview',
       contents: {
         parts: [
           {
@@ -60,6 +53,7 @@ export const analyzeTireImage = async (base64Image: string): Promise<TreadAnalys
       }
     });
 
+    // Fix: Use .text property instead of .text() method
     const text = response.text;
     if (!text) throw new Error("No response from AI");
     
@@ -70,12 +64,14 @@ export const analyzeTireImage = async (base64Image: string): Promise<TreadAnalys
   }
 };
 
+/**
+ * Gets smart advice for the truck driver.
+ * Fix: Use 'gemini-3-flash-preview' for basic text tasks.
+ */
 export const getSmartAdvisorResponse = async (userQuery: string, truckContext: string): Promise<string> => {
-    if (!apiKey) return "Modo de demonstração (Sem API Key): Recomendo verificar a pressão dos pneus a cada viagem e realizar o rodízio a cada 10.000km.";
-
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-flash-preview',
             contents: `Contexto do Caminhão: ${truckContext}
             
             Você é o RODDAR AI, um assistente especializado em gestão de pneus para caminhoneiros brasileiros. 
@@ -88,6 +84,7 @@ export const getSmartAdvisorResponse = async (userQuery: string, truckContext: s
             }
         });
 
+        // Fix: Use .text property
         return response.text || "Desculpe, não consegui processar sua dúvida agora.";
     } catch (error) {
         console.error("Error in advisor:", error);
@@ -95,15 +92,14 @@ export const getSmartAdvisorResponse = async (userQuery: string, truckContext: s
     }
 }
 
+/**
+ * Calculates road distance between cities.
+ * Fix: Use 'gemini-3-flash-preview'.
+ */
 export const getDistanceBetweenCities = async (origin: string, destination: string): Promise<number> => {
-    if (!apiKey) {
-        // Mock fallback
-        return Math.floor(Math.random() * 2000) + 100;
-    }
-
     try {
         const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+            model: 'gemini-3-flash-preview',
             contents: `Calcule a distância rodoviária aproximada em quilômetros (KM) para caminhões entre ${origin} e ${destination}.
             Considere as principais rodovias brasileiras.
             Retorne APENAS um objeto JSON com o campo 'distanceKm' (número inteiro). Exemplo: {"distanceKm": 450}`,
@@ -118,6 +114,7 @@ export const getDistanceBetweenCities = async (origin: string, destination: stri
             }
         });
 
+        // Fix: Use .text property
         const data = JSON.parse(response.text || '{}');
         return data.distanceKm || 0;
     } catch (error) {
