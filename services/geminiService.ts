@@ -9,13 +9,12 @@ export interface TreadAnalysisResult {
 }
 
 /**
- * Safely initializes GoogleGenAI only if key is present
+ * Helper to get the AI instance. 
+ * Note: Use process.env.API_KEY which is standard.
  */
-const getAIInstance = () => {
+const getAI = () => {
   const apiKey = process.env.API_KEY;
-  if (!apiKey || apiKey === "undefined" || apiKey.length < 5) {
-    return null;
-  }
+  if (!apiKey) return null;
   return new GoogleGenAI({ apiKey });
 };
 
@@ -23,16 +22,15 @@ const getAIInstance = () => {
  * Analyzes tire image using Gemini.
  */
 export const analyzeTireImage = async (base64Image: string): Promise<TreadAnalysisResult> => {
-  const ai = getAIInstance();
+  const ai = getAI();
   
   if (!ai) {
-    console.warn("RODDAR: API Key ausente. Usando análise simulada (Demo).");
-    return new Promise(resolve => setTimeout(() => resolve({
-      estimatedDepthMm: 4.8,
-      wearPercentage: 72,
-      condition: "Meia Vida / Alerta",
-      recommendation: "Pneu em estado regular. Recomenda-se rodízio e nova aferição em 5.000km."
-    }), 1500));
+    return {
+      estimatedDepthMm: 4.5,
+      wearPercentage: 70,
+      condition: "Modo de Demonstração",
+      recommendation: "Configure a API Key para análise real."
+    };
   }
 
   try {
@@ -47,13 +45,11 @@ export const analyzeTireImage = async (base64Image: string): Promise<TreadAnalys
             }
           },
           {
-            text: `Você é um especialista técnico em pneus de caminhão (truck tire expert). 
-            Analise esta imagem do sulco do pneu. 
-            Retorne um JSON com:
-            - estimatedDepthMm: estimativa em milimetros (apenas numero)
-            - wearPercentage: porcentagem de desgaste (0 a 100)
-            - condition: resumo curto em pt-BR (ex: "Novo", "Meia Vida", "Perigoso")
-            - recommendation: sugestão técnica curta em pt-BR.`
+            text: `Analise o sulco deste pneu de caminhão. Retorne um JSON com:
+            - estimatedDepthMm (número)
+            - wearPercentage (número 0-100)
+            - condition (string curta pt-BR)
+            - recommendation (string curta pt-BR)`
           }
         ]
       },
@@ -71,12 +67,9 @@ export const analyzeTireImage = async (base64Image: string): Promise<TreadAnalys
       }
     });
 
-    const text = response.text;
-    if (!text) throw new Error("No response from AI");
-    
-    return JSON.parse(text) as TreadAnalysisResult;
+    return JSON.parse(response.text || '{}');
   } catch (error) {
-    console.error("Error analyzing tire:", error);
+    console.error("Analysis error:", error);
     throw error;
   }
 };
@@ -85,26 +78,21 @@ export const analyzeTireImage = async (base64Image: string): Promise<TreadAnalys
  * Gets smart advice for the truck driver.
  */
 export const getSmartAdvisorResponse = async (userQuery: string, truckContext: string): Promise<string> => {
-    const ai = getAIInstance();
-    
-    if (!ai) {
-        return "Modo de Demonstração: Para obter respostas reais da IA RODDAR, configure sua API Key. Como dica geral: mantenha sempre a calibragem em dia para economizar até 5% de diesel.";
-    }
+    const ai = getAI();
+    if (!ai) return "A IA está em modo offline. Verifique sua conexão ou chave de API.";
 
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
-            contents: `Contexto do Caminhão: ${truckContext}
-            Pergunta do usuário: ${userQuery}`,
+            contents: `Contexto: ${truckContext}. Pergunta: ${userQuery}`,
             config: {
-                systemInstruction: "Você é o RODDAR AI, assistente de pneus para caminhoneiros. Seja direto, prático e use termos das estradas brasileiras. Foco em economia e segurança."
+                systemInstruction: "Você é o consultor RODDAR IA. Responda de forma curta e prática para caminhoneiros brasileiros."
             }
         });
 
-        return response.text || "Não consegui processar sua dúvida no momento.";
+        return response.text || "Sem resposta no momento.";
     } catch (error) {
-        console.error("Error in advisor:", error);
-        return "Erro ao conectar com a central de inteligência RODDAR.";
+        return "Erro ao consultar a base de conhecimento.";
     }
 }
 
@@ -112,31 +100,19 @@ export const getSmartAdvisorResponse = async (userQuery: string, truckContext: s
  * Calculates road distance between cities.
  */
 export const getDistanceBetweenCities = async (origin: string, destination: string): Promise<number> => {
-    const ai = getAIInstance();
-    
-    if (!ai) {
-        return Math.floor(Math.random() * 800) + 150;
-    }
+    const ai = getAI();
+    if (!ai) return 500;
 
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
-            contents: `Distância rodoviária aproximada (KM) entre ${origin} e ${destination}. JSON: {"distanceKm": number}`,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        distanceKm: { type: Type.NUMBER }
-                    }
-                }
-            }
+            contents: `Distância KM entre ${origin} e ${destination}. JSON: {"distanceKm": number}`,
+            config: { responseMimeType: "application/json" }
         });
 
         const data = JSON.parse(response.text || '{}');
         return data.distanceKm || 0;
     } catch (error) {
-        console.error("Error fetching distance:", error);
         return 0;
     }
 }
