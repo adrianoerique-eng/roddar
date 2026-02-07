@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Truck, DollarSign, Camera, MessageSquare, Menu, LayoutGrid, Settings, LogOut, MapPin } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Truck, DollarSign, Camera, MessageSquare, Menu, LayoutGrid, Settings, LogOut, MapPin, Key, ExternalLink, ShieldAlert } from 'lucide-react';
 import DigitalGarage from './components/DigitalGarage';
 import Financials from './components/Financials';
 import AIAssistant from './components/AIAssistant';
@@ -14,6 +14,24 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('GARAGE');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [hasApiKey, setHasApiKey] = useState<boolean>(!!process.env.API_KEY);
+
+  useEffect(() => {
+    const checkKey = async () => {
+      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+        const selected = await window.aistudio.hasSelectedApiKey();
+        if (selected) setHasApiKey(true);
+      }
+    };
+    checkKey();
+  }, []);
+
+  const handleOpenKeySelector = async () => {
+    if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
+      await window.aistudio.openSelectKey();
+      setHasApiKey(true); // Assume success after interaction
+    }
+  };
 
   const handleRegistrationComplete = (data: TruckType) => {
     setTruckData(data);
@@ -35,10 +53,49 @@ const App: React.FC = () => {
     return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
   };
 
+  // 1. Key Selection Screen (If no key detected)
+  if (!hasApiKey) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0B0F19] p-6">
+        <div className="max-w-md w-full glass-panel p-8 rounded-3xl border border-blue-500/20 text-center shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl -z-10"></div>
+          
+          <div className="bg-blue-600/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-400 border border-blue-500/30">
+            <Key size={32} />
+          </div>
+
+          <h1 className="text-3xl font-bold text-white mb-2 font-tech uppercase tracking-wider">Acesso RODDAR IA</h1>
+          <p className="text-slate-400 text-sm mb-8">
+            Para utilizar a inteligência artificial, análise de sulco e assistente de frotas, é necessário conectar sua chave de API do Google Gemini.
+          </p>
+
+          <button 
+            onClick={handleOpenKeySelector}
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-blue-900/40"
+          >
+            Configurar Acesso <ExternalLink size={18} />
+          </button>
+
+          <div className="mt-8 p-4 bg-slate-800/50 rounded-xl border border-slate-700 text-left">
+             <div className="flex items-center gap-2 text-yellow-500 mb-2">
+                <ShieldAlert size={16} />
+                <span className="text-[10px] font-bold uppercase tracking-widest">Aviso de Faturamento</span>
+             </div>
+             <p className="text-[10px] text-slate-500 leading-relaxed">
+               Certifique-se de selecionar uma chave de um projeto GCP com faturamento ativo. Consulte a <a href="https://ai.google.dev/gemini-api/docs/billing" target="_blank" className="text-blue-400 hover:underline">documentação de faturamento</a> para mais informações.
+             </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Onboarding Screen (If registered)
   if (!isRegistered) {
     return <Onboarding onComplete={handleRegistrationComplete} />;
   }
 
+  // 3. Main Dashboard
   const NavButton = ({ view, icon: Icon, label }: { view: ViewState, icon: any, label: React.ReactNode }) => (
     <button
       onClick={() => { setCurrentView(view); setIsMobileMenuOpen(false); }}

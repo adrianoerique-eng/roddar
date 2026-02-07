@@ -1,8 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
 
-// Fix: obtain apiKey exclusively from process.env.API_KEY and use direct initialization with named parameter.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 // Interface for the AI Tread Analysis Response
 export interface TreadAnalysisResult {
   estimatedDepthMm: number;
@@ -12,11 +9,16 @@ export interface TreadAnalysisResult {
 }
 
 /**
+ * Helper to get AI instance safely inside functions
+ */
+const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+/**
  * Analyzes tire image using Gemini.
- * Fix: Use 'gemini-3-flash-preview' for vision-based text analysis.
  */
 export const analyzeTireImage = async (base64Image: string): Promise<TreadAnalysisResult> => {
   try {
+    const ai = getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: {
@@ -53,7 +55,6 @@ export const analyzeTireImage = async (base64Image: string): Promise<TreadAnalys
       }
     });
 
-    // Fix: Use .text property instead of .text() method
     const text = response.text;
     if (!text) throw new Error("No response from AI");
     
@@ -66,10 +67,10 @@ export const analyzeTireImage = async (base64Image: string): Promise<TreadAnalys
 
 /**
  * Gets smart advice for the truck driver.
- * Fix: Use 'gemini-3-flash-preview' for basic text tasks.
  */
 export const getSmartAdvisorResponse = async (userQuery: string, truckContext: string): Promise<string> => {
     try {
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: `Contexto do Caminhão: ${truckContext}
@@ -84,7 +85,6 @@ export const getSmartAdvisorResponse = async (userQuery: string, truckContext: s
             }
         });
 
-        // Fix: Use .text property
         return response.text || "Desculpe, não consegui processar sua dúvida agora.";
     } catch (error) {
         console.error("Error in advisor:", error);
@@ -94,10 +94,10 @@ export const getSmartAdvisorResponse = async (userQuery: string, truckContext: s
 
 /**
  * Calculates road distance between cities.
- * Fix: Use 'gemini-3-flash-preview'.
  */
 export const getDistanceBetweenCities = async (origin: string, destination: string): Promise<number> => {
     try {
+        const ai = getAI();
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',
             contents: `Calcule a distância rodoviária aproximada em quilômetros (KM) para caminhões entre ${origin} e ${destination}.
@@ -114,7 +114,6 @@ export const getDistanceBetweenCities = async (origin: string, destination: stri
             }
         });
 
-        // Fix: Use .text property
         const data = JSON.parse(response.text || '{}');
         return data.distanceKm || 0;
     } catch (error) {
