@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, DollarSign, Camera, MessageSquare, Menu, LayoutGrid, Settings, LogOut, MapPin, Key, ExternalLink, ShieldAlert } from 'lucide-react';
+import { Truck, DollarSign, Camera, MessageSquare, Menu, LayoutGrid, Settings, LogOut, MapPin, Key, ExternalLink, ShieldAlert, Sparkles } from 'lucide-react';
 import DigitalGarage from './components/DigitalGarage';
 import Financials from './components/Financials';
 import AIAssistant from './components/AIAssistant';
@@ -15,6 +15,7 @@ const App: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [hasApiKey, setHasApiKey] = useState<boolean>(!!process.env.API_KEY);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
     const checkKey = async () => {
@@ -53,8 +54,8 @@ const App: React.FC = () => {
     return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
   };
 
-  // 1. Key Selection Screen (If no key detected)
-  if (!hasApiKey) {
+  // 1. Key Selection Screen (If no key detected and not in demo mode)
+  if (!hasApiKey && !isDemoMode) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#0B0F19] p-6">
         <div className="max-w-md w-full glass-panel p-8 rounded-3xl border border-blue-500/20 text-center shadow-2xl relative overflow-hidden">
@@ -69,12 +70,21 @@ const App: React.FC = () => {
             Para utilizar a inteligência artificial, análise de sulco e assistente de frotas, é necessário conectar sua chave de API do Google Gemini.
           </p>
 
-          <button 
-            onClick={handleOpenKeySelector}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-blue-900/40"
-          >
-            Configurar Acesso <ExternalLink size={18} />
-          </button>
+          <div className="space-y-4">
+              <button 
+                onClick={handleOpenKeySelector}
+                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-all shadow-lg shadow-blue-900/40"
+              >
+                Configurar Acesso <ExternalLink size={18} />
+              </button>
+
+              <button 
+                onClick={() => setIsDemoMode(true)}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-all border border-slate-700"
+              >
+                <Sparkles size={18} className="text-blue-400" /> Continuar em Modo de Demonstração
+              </button>
+          </div>
 
           <div className="mt-8 p-4 bg-slate-800/50 rounded-xl border border-slate-700 text-left">
              <div className="flex items-center gap-2 text-yellow-500 mb-2">

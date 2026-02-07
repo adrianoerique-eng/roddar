@@ -1,7 +1,8 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Tire, TireStatus, Truck, MaintenanceRecord, calculateTireStatus, PaymentMethod } from '../types';
-// Fix: Added missing Zap import from lucide-react
-import { X, AlertTriangle, Activity, PenTool, TrendingUp, History, Camera, ArrowLeft, RefreshCw, CheckCircle, Save, RotateCw, Edit, DollarSign, ShoppingBag, CreditCard, ClipboardList, Zap } from 'lucide-react';
+// Added ShoppingCart to the imports from lucide-react
+import { X, AlertTriangle, Activity, PenTool, TrendingUp, History, Camera, ArrowLeft, RefreshCw, CheckCircle, Save, RotateCw, Edit, DollarSign, ShoppingBag, CreditCard, ClipboardList, Zap, ShoppingCart } from 'lucide-react';
 import { analyzeTireImage, TreadAnalysisResult } from '../services/geminiService';
 
 interface TireDetailModalProps {
@@ -164,7 +165,7 @@ const TireDetailModal: React.FC<TireDetailModalProps> = ({ tire: initialTire, tr
                             <Edit size={18} />
                         </button>
                     </h2>
-                    <p className="text-slate-400 text-sm mt-1">Instalado em: {currentTire.purchaseDate} • DOT: {currentTire.dot}</p>
+                    <p className="text-slate-400 text-sm mt-1">Instalado em: {currentTire.purchaseDate ? new Date(currentTire.purchaseDate).toLocaleDateString('pt-BR') : 'Data não informada'} • DOT: {currentTire.dot}</p>
                 </div>
             </div>
             <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">
@@ -214,23 +215,23 @@ const TireDetailModal: React.FC<TireDetailModalProps> = ({ tire: initialTire, tr
                     </div>
                 </div>
 
-                <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-800">
-                    <h4 className="text-[10px] uppercase font-bold text-slate-500 mb-3">
-                        Dados de Aquisição
+                <div className="bg-slate-900/50 rounded-xl p-5 border border-slate-800">
+                    <h4 className="text-[11px] uppercase font-bold text-slate-500 mb-4 tracking-widest flex items-center gap-2">
+                        <ShoppingCart size={14} className="text-slate-600" /> Dados de Aquisição
                     </h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-3 gap-x-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6">
                         <div>
-                            <p className="text-slate-500 text-[10px] uppercase">Loja</p>
-                            <p className="text-slate-200 text-sm font-medium truncate">{currentTire.storeName || 'Não informado'}</p>
+                            <p className="text-slate-500 text-[10px] uppercase font-bold mb-1">Loja / Fornecedor</p>
+                            <p className="text-slate-200 text-sm font-semibold truncate">{currentTire.storeName || 'Não informado'}</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 text-[10px] uppercase">Pagamento</p>
-                            <p className="text-slate-200 text-sm font-medium">{currentTire.paymentMethod}</p>
+                            <p className="text-slate-500 text-[10px] uppercase font-bold mb-1">Forma de Pagamento</p>
+                            <p className="text-slate-200 text-sm font-semibold">{currentTire.paymentMethod}</p>
                         </div>
                         <div>
-                            <p className="text-slate-500 text-[10px] uppercase">Data de Aquisição</p>
-                            <p className="text-slate-200 text-sm font-medium">
-                                {currentTire.purchaseDate ? new Date(currentTire.purchaseDate).toLocaleDateString('pt-BR') : 'Não informado'}
+                            <p className="text-slate-500 text-[10px] uppercase font-bold mb-1">Data de Aquisição</p>
+                            <p className="text-slate-200 text-sm font-semibold">
+                                {currentTire.purchaseDate ? new Date(currentTire.purchaseDate).toLocaleDateString('pt-BR') : 'Não informada'}
                             </p>
                         </div>
                     </div>
@@ -379,10 +380,11 @@ const TireDetailModal: React.FC<TireDetailModalProps> = ({ tire: initialTire, tr
                         </div>
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Loja / Fornecedor</label>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <ShoppingBag className="text-slate-500" size={16} /> Loja / Fornecedor
+                        </label>
                         <div className="relative">
-                            <ShoppingBag className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={16}/>
-                            <input type="text" value={financialData.storeName} onChange={e => setFinancialData({...financialData, storeName: e.target.value})} className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 pl-10 text-white" placeholder="Ex: Pneus e Cia" />
+                            <input type="text" value={financialData.storeName} onChange={e => setFinancialData({...financialData, storeName: e.target.value})} className="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 text-white" placeholder="Ex: Pneus e Cia" />
                         </div>
                     </div>
                     <div>
