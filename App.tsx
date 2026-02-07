@@ -14,23 +14,31 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewState>('GARAGE');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [hasApiKey, setHasApiKey] = useState<boolean>(!!process.env.API_KEY);
+  
+  // Resilient check for API Key
+  const [hasApiKey, setHasApiKey] = useState<boolean>(() => {
+    const envKey = process.env.API_KEY;
+    return !!(envKey && envKey !== "undefined" && envKey.length > 5);
+  });
+  
   const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
     const checkKey = async () => {
-      if (window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
+      // If we don't have it via process.env, check the specialized bridge
+      if (!hasApiKey && window.aistudio && typeof window.aistudio.hasSelectedApiKey === 'function') {
         const selected = await window.aistudio.hasSelectedApiKey();
         if (selected) setHasApiKey(true);
       }
     };
     checkKey();
-  }, []);
+  }, [hasApiKey]);
 
   const handleOpenKeySelector = async () => {
     if (window.aistudio && typeof window.aistudio.openSelectKey === 'function') {
       await window.aistudio.openSelectKey();
-      setHasApiKey(true); // Assume success after interaction
+      // Optimization: trigger a check or assume success to let user in
+      setHasApiKey(true);
     }
   };
 
@@ -53,6 +61,15 @@ const App: React.FC = () => {
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
   };
+
+  const DevelopmentLabel = ({ text }: { text: string }) => (
+    <div className="flex flex-col leading-none">
+        <span>{text}</span>
+        <span className="text-[10px] text-slate-500 font-sans font-normal normal-case mt-0.5">
+            (em <span className="text-red-500 font-bold">desenvolvimento</span>)
+        </span>
+    </div>
+  );
 
   // 1. Key Selection Screen (If no key detected and not in demo mode)
   if (!hasApiKey && !isDemoMode) {
@@ -100,7 +117,7 @@ const App: React.FC = () => {
     );
   }
 
-  // 2. Onboarding Screen (If registered)
+  // 2. Onboarding Screen
   if (!isRegistered) {
     return <Onboarding onComplete={handleRegistrationComplete} />;
   }
@@ -138,8 +155,8 @@ const App: React.FC = () => {
         <nav className="flex-1 space-y-2">
             <NavButton view="GARAGE" icon={LayoutGrid} label="Garagem Digital" />
             <NavButton view="TRIP" icon={MapPin} label="Controle de Viagens" />
-            <NavButton view="FINANCIAL" icon={DollarSign} label="Patrimônio e CPK" />
-            <NavButton view="AI_ADVISOR" icon={MessageSquare} label="Consultor IA" />
+            <NavButton view="FINANCIAL" icon={DollarSign} label={<DevelopmentLabel text="Financeiro" />} />
+            <NavButton view="AI_ADVISOR" icon={MessageSquare} label={<DevelopmentLabel text="Consultar" />} />
         </nav>
 
         <div className="mt-auto">
